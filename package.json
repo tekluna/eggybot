@@ -1,0 +1,23 @@
+{
+  "name": "EggyBot",
+  "version": "2.0.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.21.0",
+    "dotenv": "^17.2.0",
+    "node-fetch": "^3.3.2",
+    "sqlite3": "^5.1.7"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "example"
+  ],
+  "devDependencies": {
+    "prettier": "3.6.2"
+  }
+}
