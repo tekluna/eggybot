@@ -7,6 +7,7 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "@prisma/client": "^6.12.0",
     "discord.js": "^14.21.0",
     "dotenv": "^17.2.0",
     "jimp": "^1.6.0",
@@ -19,6 +20,7 @@
     "example"
   ],
   "devDependencies": {
-    "prettier": "3.6.2"
+    "prettier": "3.6.2",
+    "prisma": "^6.12.0"
   }
 }
