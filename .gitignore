@@ -1,0 +1,24 @@
+# IDE
+.idea
+
+# environment
+.env 
+
+# Node.js
+node_modules*
+config.json
+
+# Database files
+database/*.db
+database/*.sqlite
+database/*.sqlite3
+*.db
+*.sqlite
+*.sqlite3
+
+#docker
+.dockerignore
+Dockerfile
+
+#temp
+./commands/slash.pingcount.js.bak
