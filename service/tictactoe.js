@@ -9,6 +9,21 @@ const ticTacToeSize = parseInt(process.env.TICTACTOE_SIZE) | 600;
 //   ["x", "o", "x"]
 // ]
 
+const adaptDbScore = (score) => {
+
+  const adaptedScore = []
+
+  for (let i = 0; i < 3; i++) {
+    const scoreLine = []
+    for (let j = 0; j < 3; j++) {
+      scoreLine.push(score[`${i*3+j+1}`]);
+    }
+    adaptedScore.push(scoreLine);
+  }
+
+  return adaptedScore
+}
+
 const createEmptyGrid = () => {
   const grid = new Jimp({ width: ticTacToeSize, height: ticTacToeSize, color: 0x00000000 });
   for (let i = 1; i < 3; i++) {
@@ -53,7 +68,7 @@ export async function generateTttImage(score){
 
   const imgWidth = image.width;
   const ticTacToeXPadding = (imgWidth - ticTacToeSize) / 2;
-  const fullGrid = await addScoreToGrid(createEmptyGrid(), score);
+  const fullGrid = await addScoreToGrid(createEmptyGrid(), adaptDbScore(score));
   image.composite(fullGrid, ticTacToeXPadding, ticTacToeXPadding / 60);
 
   const randomUUID = crypto.randomUUID()
