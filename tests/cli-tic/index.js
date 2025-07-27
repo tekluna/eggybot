@@ -1,122 +1,66 @@
-const readline = require("readline");
-
-const board = Array(9).fill("---");
-const separator = " | ";
-
-let gameState = 0;
-const playedPositionsP1 = [];
-const playedPositionsP2 = [];
-
-// cli specific stuff
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-});
-
-function printBoard() {
-    for (let i = 0; i < board.length; i += 3) {
-        console.log(board.slice(i, i + 3).join(separator));
-    }
-}
 const winCombos = [
-  // Rows
-  [7, 8, 9],
-  [4, 5, 6],
-  [1, 2, 3],
+    // Rows
+    [7, 8, 9],
+    [4, 5, 6],
+    [1, 2, 3],
 
-  // Columns
-  [7, 4, 1],
-  [8, 5, 2],
-  [9, 6, 3],
+    // Columns
+    [7, 4, 1],
+    [8, 5, 2],
+    [9, 6, 3],
 
-  // Diagonals
-  [7, 5, 3],
-  [1, 5, 9]
+    // Diagonals
+    [7, 5, 3],
+    [1, 5, 9],
 ];
 
-// function checkWin(playerPositions) 
-function checkWin(playerPositions) {
-    return winCombos.some(combo => 
-        combo.every(pos => playerPositions.includes(pos - 1))
+function findPlayedMoves(board, player) {
+    const playedMoves = [];
+    for (let i=0; i < board.lengt; i++){
+        if (board[i] === player);
+        playedMoves.push(i);
+    }
+    return playedMoves;
+}
+
+// checkWin(playedMoves)
+function checkWin(playedMoves) {
+    return winCombos.some((combo) =>
+        combo.every((pos) => playedMoves.includes(pos - 1))
     );
 }
 
-function playMove(player) {
-    const playerSymbol = "-X-";
-    if (gameState === 9) {
-        console.log("Game over!");
-        rl.close();
+function playMove(currentPlayer, board, selectedMove) { //selectedMove just needs to be a single integer from 0 to 8 in the bd i think
+
+    const nextPlayer = currentPlayer === "X" ? "O" : "X";
+    const playedMoves = findPlayedMoves(board, currentPlayer);
+    const gameWon = checkWin(playedMoves);
+    
+    if (board.length === 9) {
+        // game is tied
         return;
     } else {
-        rl.question(`Player ${player}, choose a position (1-9): `, (answer) => {
-            const position = parseInt(answer, 10) - 1;
+        const selectedMove = parseInt(answer, 10) - 1;
 
-            if (position < 0 || position >= 9 || isNaN(position)) {
-                console.log("Invalid input. Try a number between 1 and 9.");
-                return playMove(player);
-            }
+        if (selectedMove < 0 || selectedMove >= 9 || isNaN(selectedMove)) {
+            // selectedMove is invalid
+            return playMove(player);
+        }
 
-            if (board[position] === "---") {
-                board[position] = playerSymbol;
-                gameState++;
-                playedPositionsP1.push(position);
-                console.log(gameState);
-                printBoard();
-                if (checkWin(playedPositionsP1)) {
-                    console.log(`Player ${player} wins!`);
-                    rl.close();
-                    return;
-                }
-                console.log(
-                    `Player ${player} played at position ${position + 1}\n`
-                );
-                playMove2("2");
-            } else {
-                console.log("Position already taken. Try again.\n");
-                playMove(player);
+        if (board[selectedMove] === "") {
+            board[selectedMove] = symbol;
+            gameState++;
+            // write played pos in db
+
+            if (checkWin(playedMovesX)) { //if isGameWon true the games gotta stop and currentPlayer wins
+                // announce winner
+                return;
             }
-        });
+            // annonce played posotion
+        } else {
+            // selectedMove already played
+            playMove(player);
+        }
     }
+    return(nextPlayer, board);
 }
-
-function playMove2(player) {
-    const playerSymbol = "-O-";
-
-    if (gameState === 9) {
-        console.log("Game over! Its a tie!");
-        rl.close();
-        return;
-    } else {
-        rl.question(`Player ${player}, choose a position (1-9): `, (answer) => {
-            const position = parseInt(answer, 10) - 1;
-
-            if (position < 0 || position >= 9 || isNaN(position)) {
-                console.log("Invalid input. Try a number between 1 and 9.");
-                return playMove(player);
-            }
-
-            if (board[position] === "---") {
-                board[position] = playerSymbol;
-                gameState++;
-                playedPositionsP2.push(position);
-                console.log(gameState);
-                printBoard();
-                if (checkWin(playedPositionsP2)) {
-                    console.log(`Player ${player} wins!`);
-                    rl.close();
-                    return;
-                }
-                console.log(
-                    `Player ${player} played at position ${position + 1}\n`
-                );
-                playMove("1");
-            } else {
-                console.log("Position already taken. Try again.\n");
-                playMove2(player);
-            }
-        });
-    }
-}
-
-printBoard();
-playMove("1");
