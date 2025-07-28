@@ -16,9 +16,10 @@ const winCombos = [
 
 function findPlayedMoves(board, player) {
     const playedMoves = [];
-    for (let i = 0; i < board.lengt; i++) {
-        if (board[i] === player);
-        playedMoves.push(i);
+    for (let i = 0; i < board.length ; i++) {
+        if (board[i] === player){
+            playedMoves.push(i);
+        }
     }
     return playedMoves;
 }
@@ -35,31 +36,35 @@ function playMove(currentPlayer, board, selectedMove) {
 
     const nextPlayer = currentPlayer === "x" ? "o" : "x";
     const playedMoves = findPlayedMoves(board, currentPlayer);
+    let newBoard = board;
+    console.log(board, playedMoves, currentPlayer, nextPlayer);
+    let hasWon = checkWin(playedMoves); 
 
-    if (board.length === 9) {
-        // game is tied
+    if (playedMoves.length === 9) { // game is tied
         return;
-    } else {
-        const selectedMove = parseInt(answer, 10) - 1;
-
+    }
         if (selectedMove < 0 || selectedMove >= 9 || isNaN(selectedMove)) {
             // selectedMove is invalid
             return playMove(player);
         }
 
-        if (board[selectedMove] === "") {
-            board[selectedMove] = symbol; // boken
+        if (newBoard[selectedMove] === "") {
+            newBoard[selectedMove] = (currentPlayer); // boken
+            console.log(newBoard);
             // write played pos in db
 
-            if (checkWin(playedMoves)) {
-                // announce winner
-                return;
+            if (hasWon === true) {
+                console.log(`${currentPlayer} wins!`);
+                return(newBoard, hasWon, nextPlayer);
             }
-            // annonce played posotion
         } else {
             // selectedMove already played
             playMove(player);
         }
-    }
-    return (nextPlayer, board);
 }
+
+// tests
+xPlayer = "x";
+xBoard = ["", "x", "", "", "", "o", "", "x", "x"];
+xSelectedMove = 0;
+console.log(playMove(xPlayer, xBoard, xSelectedMove)); // should return next player and new board
