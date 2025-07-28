@@ -44,7 +44,6 @@ function findMovesAmmount(board) {
     return movesAmmount;
 }
 
-// checkWin(playedMoves)
 function checkWin(playedMoves) {
     return winCombos.some((combo) =>
         combo.every((pos) => playedMoves.includes(pos - 1))
@@ -52,16 +51,15 @@ function checkWin(playedMoves) {
 }
 
 function playMove(currentPlayer, board, selectedMove) {
+
     const nextPlayer = currentPlayer === "x" ? "o" : "x";
     let newBoard = board;
     const allPlayedMoves = findAllMoves(board);
 
     // Check if the selected move is valid
     if (selectedMove < 0 || selectedMove >= 9 || isNaN(selectedMove)) {
-        console.log("Invalid move. Please select a number between 0 and 8.");
-        return;
+        throw new Error("This move is not valid!")
     }
-
     // Check if the selected move is already taken
     if (allPlayedMoves.includes(selectedMove)) {
         throw new Error("This move has already been played!");
@@ -70,7 +68,6 @@ function playMove(currentPlayer, board, selectedMove) {
     if (newBoard[selectedMove] === "") {
         newBoard[selectedMove] = currentPlayer;
 
-        // check updated board for win or draw
         const playedMoves = findPlayedMoves(newBoard, currentPlayer);
         const hasWon = checkWin(playedMoves);
         const movesAmmount = findMovesAmmount(board);
@@ -86,9 +83,8 @@ function playMove(currentPlayer, board, selectedMove) {
         return { newBoard, hasWon: false, nextPlayer };
     }
 }
-
-// tests
-xPlayer = "o";
-xBoard = ["x", "x", "o", "x", "x", "o", "", "x", "x"];
-xSelectedMove = 6;
-console.log(playMove(xPlayer, xBoard, xSelectedMove));
+// // tests
+// xPlayer = "o";
+// xBoard = ["x", "x", "o", "x", "x", "o", "", "x", "x"];
+// xSelectedMove = 6;
+// console.log(playMove(xPlayer, xBoard, xSelectedMove));
