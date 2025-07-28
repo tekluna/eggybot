@@ -16,7 +16,7 @@ const winCombos = [
 
 function findPlayedMoves(board, player) {
     const playedMoves = [];
-    for (let i=0; i < board.lengt; i++){
+    for (let i = 0; i < board.lengt; i++) {
         if (board[i] === player);
         playedMoves.push(i);
     }
@@ -30,12 +30,12 @@ function checkWin(playedMoves) {
     );
 }
 
-function playMove(currentPlayer, board, selectedMove) { //selectedMove just needs to be a single integer from 0 to 8 in the bd i think
+function playMove(currentPlayer, board, selectedMove) {
+    //selectedMove just needs to be a single integer from 0 to 8 in the bd i think
 
-    const nextPlayer = currentPlayer === "X" ? "O" : "X";
+    const nextPlayer = currentPlayer === "x" ? "o" : "x";
     const playedMoves = findPlayedMoves(board, currentPlayer);
-    const gameWon = checkWin(playedMoves);
-    
+
     if (board.length === 9) {
         // game is tied
         return;
@@ -48,11 +48,10 @@ function playMove(currentPlayer, board, selectedMove) { //selectedMove just need
         }
 
         if (board[selectedMove] === "") {
-            board[selectedMove] = symbol;
-            gameState++;
+            board[selectedMove] = symbol; // boken
             // write played pos in db
 
-            if (checkWin(playedMovesX)) { //if isGameWon true the games gotta stop and currentPlayer wins
+            if (checkWin(playedMoves)) {
                 // announce winner
                 return;
             }
@@ -62,5 +61,5 @@ function playMove(currentPlayer, board, selectedMove) { //selectedMove just need
             playMove(player);
         }
     }
-    return(nextPlayer, board);
+    return (nextPlayer, board);
 }
