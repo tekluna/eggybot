@@ -16,12 +16,32 @@ const winCombos = [
 
 function findPlayedMoves(board, player) {
     const playedMoves = [];
-    for (let i = 0; i < board.length ; i++) {
-        if (board[i] === player){
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] === player) {
             playedMoves.push(i);
         }
     }
     return playedMoves;
+}
+
+function findAllMoves(board) {
+    const allPlayedMoves = [];
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] === "x" || board[i] === "o") {
+            allPlayedMoves.push(i);
+        }
+    }
+    return allPlayedMoves;
+}
+
+function findMovesAmmount(board) {
+    let movesAmmount = 0;
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] !== "") {
+            movesAmmount++;
+        }
+    }
+    return movesAmmount;
 }
 
 // checkWin(playedMoves)
@@ -32,39 +52,43 @@ function checkWin(playedMoves) {
 }
 
 function playMove(currentPlayer, board, selectedMove) {
-    //selectedMove just needs to be a single integer from 0 to 8 in the bd i think
-
     const nextPlayer = currentPlayer === "x" ? "o" : "x";
-    const playedMoves = findPlayedMoves(board, currentPlayer);
     let newBoard = board;
-    console.log(board, playedMoves, currentPlayer, nextPlayer);
-    let hasWon = checkWin(playedMoves); 
+    const allPlayedMoves = findAllMoves(board);
 
-    if (playedMoves.length === 9) { // game is tied
+    // Check if the selected move is valid
+    if (selectedMove < 0 || selectedMove >= 9 || isNaN(selectedMove)) {
+        console.log("Invalid move. Please select a number between 0 and 8.");
         return;
     }
-        if (selectedMove < 0 || selectedMove >= 9 || isNaN(selectedMove)) {
-            // selectedMove is invalid
-            return playMove(player);
-        }
 
-        if (newBoard[selectedMove] === "") {
-            newBoard[selectedMove] = (currentPlayer); // boken
-            console.log(newBoard);
-            // write played pos in db
+    // Check if the selected move is already taken
+    if (allPlayedMoves.includes(selectedMove)) {
+        throw new Error("This move has already been played!");
+    }
 
-            if (hasWon === true) {
-                console.log(`${currentPlayer} wins!`);
-                return(newBoard, hasWon, nextPlayer);
-            }
+    if (newBoard[selectedMove] === "") {
+        newBoard[selectedMove] = currentPlayer;
+
+        // check updated board for win or draw
+        const playedMoves = findPlayedMoves(newBoard, currentPlayer);
+        const hasWon = checkWin(playedMoves);
+        const movesAmmount = findMovesAmmount(board);
+
+        if (hasWon === true) {
+            console.log(`${currentPlayer} wins!`);
+            return { newBoard, hasWon, currentPlayer };
         } else {
-            // selectedMove already played
-            playMove(player);
+            if (movesAmmount === 9) {
+                return { newBoard, tie: true};
+            }
         }
+        return { newBoard, hasWon: false, nextPlayer };
+    }
 }
 
 // tests
-xPlayer = "x";
-xBoard = ["", "x", "", "", "", "o", "", "x", "x"];
-xSelectedMove = 0;
-console.log(playMove(xPlayer, xBoard, xSelectedMove)); // should return next player and new board
+xPlayer = "o";
+xBoard = ["x", "x", "o", "x", "x", "o", "", "x", "x"];
+xSelectedMove = 6;
+console.log(playMove(xPlayer, xBoard, xSelectedMove));
