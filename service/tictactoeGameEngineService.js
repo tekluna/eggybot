@@ -50,7 +50,7 @@ function checkWin(playedMoves) {
     );
 }
 
-function playMove(currentPlayer, board, selectedMove) {
+function playMove(board, currentPlayer, selectedMove) {
 
     const nextPlayer = currentPlayer === "x" ? "o" : "x";
     let newBoard = board;
@@ -69,19 +69,24 @@ function playMove(currentPlayer, board, selectedMove) {
         newBoard[selectedMove] = currentPlayer;
 
         const playedMoves = findPlayedMoves(newBoard, currentPlayer);
-        const hasWon = checkWin(playedMoves);
         const movesAmmount = findMovesAmmount(board);
+        const hasWon = checkWin(playedMoves);
 
         if (hasWon === true) {
             console.log(`${currentPlayer} wins!`);
-            return { newBoard, hasWon, currentPlayer };
+            return { newBoard, hasWon, isTie: false, nextPlayer};
         } else {
             if (movesAmmount === 9) {
-                return { newBoard, tie: true};
+                return { newBoard, haswon: false, isTie: true, nextPlayer};
             }
         }
-        return { newBoard, hasWon: false, nextPlayer };
+        return { newBoard, hasWon: false, isTie: false, nextPlayer};
     }
+}
+
+export async function updateScore(board, currentPlayer, selectedMove){
+    const {newBoard, hasWon, isTie, nextPlayer} = playMove(board, currentPlayer, selectedMove);
+    return {newBoard, hasWon, isTie, nextPlayer};
 }
 // // tests
 // xPlayer = "o";
