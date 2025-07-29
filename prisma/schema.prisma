@@ -21,11 +21,8 @@ model User {
 
 model Tictactoe {
   id         Int       @id @default(autoincrement())
-  playerX    String // user Id
-  playerO    String
-  currentPlayer String // "x" or "o"
-  selectedMove Int 
-  score      Json // ["","x","o","",...] 
+  user       User[]
+  score      Json
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now())
   expires_at DateTime?
