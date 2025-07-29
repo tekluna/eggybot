@@ -22,3 +22,5 @@ Dockerfile
 
 #temp
 ./commands/slash.pingcount.js.bak
+/generated/prisma
+/temp/*
