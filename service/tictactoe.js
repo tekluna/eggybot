@@ -2,67 +2,6 @@ const { Jimp } = require("jimp");
 
 const ticTacToeSize = parseInt(process.env.TICTACTOE_SIZE) | 600;
 
-const checkForTie = (board) => {
-  let isTie = true;
-  board.forEach(line => isTie = isTie && line.every(move => move !== ""))
-  return isTie;
-}
-
-const checkForWin = (board) => {
-  const reversedBoard = []
-  for (let x = 0; x < 3; x++) {
-    const reversedLine = []
-    for (let y = 0; y < 3; y++) {
-      reversedLine.push(board[y][x])
-    }
-    reversedBoard.push(reversedLine)
-  }
-
-
-  const diagonalsBoard = []
-  for (let y = 0; y < 3; y++) {
-    diagonalsBoard.push(board[y][y])
-  }
-  for (let y = 0; y < 3; y++) {
-    diagonalsBoard.push(board[y][3 - y])
-  }
-
-  for (let x = 0; x < 3; x++) {
-    if (board[x].every(box => box === "x" || box === "o")){
-      return true
-    }
-    if (reversedBoard[x].every(box => box === "x" || box === "o")){
-      return true
-    }
-    if (diagonalsBoard.every(box => box === "x" || box === "o")){
-      return true
-    }
-  }
-
-  return false
-}
-
-const makeMove = (board, player, move) => {
-  const line = Math.floor((move - 1) / 3)
-  const column = (move - 1) % 3
-  board[line][column] = player ? "x" : "o"
-  if (checkForTie(board)) console.log("ITS A TIE");
-  if (checkForWin(board)) console.log("YOU WON");
-  return { board, player, move };
-}
-
-const dbBoard = [
-  ["x", "", "o"],
-  ["x", "o", ""],
-  ["o", "x", "x"]
-];
-
-const moveToPlay = 4
-
-const player = "x"
-
-console.log(makeMove(dbBoard, player, moveToPlay));
-
 const adaptDbScore = (score) => {
 
   const adaptedScore = []
