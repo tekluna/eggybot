@@ -34,16 +34,6 @@ function findAllMoves(board) {
     return allPlayedMoves;
 }
 
-function findMovesAmmount(board) {
-    let movesAmmount = 0;
-    for (let i = 0; i < board.length; i++) {
-        if (board[i] !== "") {
-            movesAmmount++;
-        }
-    }
-    return movesAmmount;
-}
-
 function checkWin(playedMoves) {
     return winCombos.some((combo) =>
         combo.every((pos) => playedMoves.includes(pos - 1))
@@ -51,14 +41,13 @@ function checkWin(playedMoves) {
 }
 
 function playMove(board, currentPlayer, selectedMove) {
-
     const nextPlayer = currentPlayer === "x" ? "o" : "x";
     let newBoard = board;
     const allPlayedMoves = findAllMoves(board);
 
     // Check if the selected move is valid
     if (selectedMove < 0 || selectedMove >= 9 || isNaN(selectedMove)) {
-        throw new Error("This move is not valid!")
+        throw new Error("This move is not valid!");
     }
     // Check if the selected move is already taken
     if (allPlayedMoves.includes(selectedMove)) {
@@ -69,27 +58,25 @@ function playMove(board, currentPlayer, selectedMove) {
         newBoard[selectedMove] = currentPlayer;
 
         const playedMoves = findPlayedMoves(newBoard, currentPlayer);
-        const movesAmmount = findMovesAmmount(board);
         const hasWon = checkWin(playedMoves);
 
         if (hasWon === true) {
             console.log(`${currentPlayer} wins!`);
-            return { newBoard, hasWon, isTie: false, nextPlayer};
+            return { newBoard, hasWon, isTie: false, nextPlayer };
         } else {
-            if (movesAmmount === 9) {
-                return { newBoard, haswon: false, isTie: true, nextPlayer};
+            if (newBoard.every((move) => move !== "")) {
+                return { newBoard, haswon: false, isTie: true, nextPlayer };
             }
         }
-        return { newBoard, hasWon: false, isTie: false, nextPlayer};
+        return { newBoard, hasWon: false, isTie: false, nextPlayer };
     }
 }
 
-export async function updateScore(board, currentPlayer, selectedMove){
-    const {newBoard, hasWon, isTie, nextPlayer} = playMove(board, currentPlayer, selectedMove);
-    return {newBoard, hasWon, isTie, nextPlayer};
+export async function updateScore(board, currentPlayer, selectedMove) {
+    const { newBoard, hasWon, isTie, nextPlayer } = playMove(
+        board,
+        currentPlayer,
+        selectedMove
+    );
+    return { newBoard, hasWon, isTie, nextPlayer };
 }
-// // tests
-// xPlayer = "o";
-// xBoard = ["x", "x", "o", "x", "x", "o", "", "x", "x"];
-// xSelectedMove = 6;
-// console.log(playMove(xPlayer, xBoard, xSelectedMove));
