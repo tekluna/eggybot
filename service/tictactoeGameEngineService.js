@@ -63,15 +63,15 @@ function playMove(board, currentPlayer, selectedMove) {
         if (hasWon === true) {
             console.log(`${currentPlayer} wins!`);
             return { newBoard, hasWon, isTie: false, nextPlayer };
-        } else {
-            if (newBoard.every((move) => move !== "")) {
-                return { newBoard, haswon: false, isTie: true, nextPlayer };
-            }
         }
+        if (newBoard.every((move) => move !== "")) {
+            return { newBoard, haswon: false, isTie: true, nextPlayer };
+        }
+
         return { newBoard, hasWon: false, isTie: false, nextPlayer };
     }
 }
-
+S
 export async function updateScore(board, currentPlayer, selectedMove) {
     const { newBoard, hasWon, isTie, nextPlayer } = playMove(
         board,
