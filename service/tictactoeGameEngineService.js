@@ -71,7 +71,7 @@ function playMove(board, currentPlayer, selectedMove) {
         return { newBoard, hasWon: false, isTie: false, nextPlayer };
     }
 }
-S
+
 export async function updateScore(board, currentPlayer, selectedMove) {
     const { newBoard, hasWon, isTie, nextPlayer } = playMove(
         board,

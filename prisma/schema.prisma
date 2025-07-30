@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  // output   = "../generated/prisma"
 }
 
 datasource db {
@@ -13,16 +13,17 @@ datasource db {
 
 model User {
   discord_id   String     @id @unique
-  tictactoe    Tictactoe? @relation(fields: [tictactoe_id], references: [id])
-  tictactoe_id Int?
+  tttWins Int @default(0)
   created_at   DateTime   @default(now())
   updated_at   DateTime   @default(now())
 }
 
 model Tictactoe {
-  id         Int       @id @default(autoincrement())
-  user       User[]
-  score      Json
+  gameId    String @id @unique
+  playerX   String
+  playerO   String
+  currentPlayer String
+  board     Json
   created_at DateTime  @default(now())
   updated_at DateTime  @default(now())
   expires_at DateTime?

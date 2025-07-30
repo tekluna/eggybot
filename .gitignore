@@ -15,7 +15,11 @@ database/*.sqlite3
 *.db
 *.sqlite
 *.sqlite3
-
+#prisma
+/prisma/database/*
+/prisma/database
+/prisma/migrations/*
+/prisma/migrations
 #docker
 .dockerignore
 Dockerfile
@@ -24,3 +28,5 @@ Dockerfile
 ./commands/slash.pingcount.js.bak
 /generated/prisma
 /temp/*
+
+
