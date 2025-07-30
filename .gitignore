@@ -30,3 +30,5 @@ Dockerfile
 /temp/*
 
 
+
+/generated/prisma
