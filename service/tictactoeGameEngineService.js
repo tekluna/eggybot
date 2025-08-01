@@ -24,16 +24,6 @@ function findPlayedMoves(board, player) {
     return playedMoves;
 }
 
-function findAllMoves(board) {
-    const allPlayedMoves = [];
-    for (let i = 0; i < board.length; i++) {
-        if (board[i] === "x" || board[i] === "o") {
-            allPlayedMoves.push(i);
-        }
-    }
-    return allPlayedMoves;
-}
-
 function checkWin(playedMoves) {
     return winCombos.some((combo) =>
         combo.every((pos) => playedMoves.includes(pos - 1))
@@ -43,14 +33,14 @@ function checkWin(playedMoves) {
 function playMove(board, currentPlayer, selectedMove) {
     const nextPlayer = currentPlayer === "x" ? "o" : "x";
     let newBoard = board;
-    const allPlayedMoves = findAllMoves(board);
 
     // Check if the selected move is valid
     if (selectedMove < 0 || selectedMove >= 9 || isNaN(selectedMove)) {
         throw new Error("This move is not valid!");
     }
-    // Check if the selected move is already taken
-    if (allPlayedMoves.includes(selectedMove)) {
+
+    //     throw new Error("This move has already been played!");
+    if (newBoard[selectedMove] !== "") {
         throw new Error("This move has already been played!");
     }
 
@@ -62,10 +52,10 @@ function playMove(board, currentPlayer, selectedMove) {
 
         if (hasWon === true) {
             console.log(`${currentPlayer} wins!`);
-            return { newBoard, hasWon, isTie: false, nextPlayer };
+            return { newBoard, hasWon: true, isTie: false, nextPlayer };
         }
         if (newBoard.every((move) => move !== "")) {
-            return { newBoard, haswon: false, isTie: true, nextPlayer };
+            return { newBoard, hasWon: false, isTie: true, nextPlayer };
         }
 
         return { newBoard, hasWon: false, isTie: false, nextPlayer };

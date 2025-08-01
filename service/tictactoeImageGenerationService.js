@@ -1,5 +1,4 @@
-const { Jimp } = require("jimp");
-
+import { Jimp } from "jimp";
 const ticTacToeSize = parseInt(process.env.TICTACTOE_SIZE) | 600;
 
 const adaptDbScore = (score) => {
