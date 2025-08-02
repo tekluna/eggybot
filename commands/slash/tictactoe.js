@@ -2,7 +2,9 @@ const { SlashCommandBuilder } = require("discord.js");
 const crypto = require("crypto");
 
 const { updateScore } = require("../../service/tictactoeGameEngineService.js");
-const { generateTttImage } = require("../../service/tictactoeImageGenerationService.js");
+const {
+    generateTttImage,
+} = require("../../service/tictactoeImageGenerationService.js");
 
 const prisma = require("../../service/prismaClientService.js");
 
@@ -77,7 +79,8 @@ async function initGameData(
     return;
 }
 async function isPlayerInGame(playerIdList, gameId) {
-    for (let i = 0; i < playerIdList; i++) {
+    for (let i = 0; i < playerIdList.length; i++) {
+        player = playerIdList[i];
         const userData = await prisma.user.findUnique({
             where: {
                 discord_id: playerIdList[i],
@@ -85,7 +88,8 @@ async function isPlayerInGame(playerIdList, gameId) {
         });
 
         if (userData.current_game !== null) {
-            throw new error("Player is already in a game");
+
+            return { isInGame: true, player };
         } else {
             if (!userData.current_game) {
                 await prisma.user.update({
@@ -99,6 +103,7 @@ async function isPlayerInGame(playerIdList, gameId) {
             }
         }
     }
+    return { IsInGame: false, undefined };
     // if user has a currentgame get the id to fetchGameDataFromDb
 }
 async function fetchGameDataFromDb(gameId) {
@@ -146,12 +151,24 @@ module.exports = {
         const playerIdList = [player1.id, player2.id];
         const defaultBoard = ["", "", "", "", "", "", "", "", ""];
 
-        if (player2.bot === true) {
-            await interaction.reply("You can't play against a bot silly!");
-            return;
-        }
-
         // commented for debuggin and testing reasons
+        // const { isInGame, playerInGame } = await isPlayerInGame(
+        //     playerIdList,
+        //     gameId
+        // );
+        // if (isInGame == true) {
+        //     await interaction.reply(
+        //         `Player  with user id (${playerInGame}) is alredy in a game`
+        //     );
+        //     return;
+        // }
+        //
+        // if (player2.bot === true) {
+        //     await interaction.reply("You can't play against a bot silly!");
+        //     throw new Error("Player is already in a game");
+        //     return;
+        // }
+
         // if (player2.id === player1.id) {
         //     await interaction.reply("You can't play against yourself... Get some friends please");
         //     throw new Error("User cannot play against self");
@@ -163,7 +180,6 @@ module.exports = {
 
         await isPlayerInDb(playerIdList, gameId);
         await initGameData(gameId, playerX, playerO, firstPlayer, defaultBoard);
-        await isPlayerInGame(playerIdList, gameId);
 
         const { currentPlayer, board } = await fetchGameDataFromDb(gameId);
 
@@ -175,8 +191,8 @@ module.exports = {
         );
         console.log(newBoard, hasWon, isTie, nextPlayer);
 
-        const gameImage = generateTttImage(prisma.tictactoe.board);
-        console.log(gameImage);
+        // const gameImage = generateTttImage(prisma.tictactoe.board);
+        // console.log(gameImage);
 
         // handle selection and display with discord componentsV2
 

@@ -29,7 +29,7 @@ const createEmptyGrid = () => {
 }
 
 const addScoreToGrid = async (grid, score) => {
-  const cross = await Jimp.read("../assets/cross_180x180.png");
+  const cross = await Jimp.read("..//cross_180x180.png");
   const circle = await Jimp.read("../assets/circle_180x180.png");
 
   const boxSize = ticTacToeSize / 3
@@ -37,7 +37,7 @@ const addScoreToGrid = async (grid, score) => {
   const basePadding = (boxSize - sizeForCrossAndCircle) / 2;
 
   cross.resize({w: sizeForCrossAndCircle, h: sizeForCrossAndCircle});
-  circle.resize({w: sizeForCrossAndCircle, h: sizeForCrossAndCircle})
+  circle.resize({w: sizeForCrossAndCircle, h: sizeForCrossAndCircle});
 
   for (let y = 0; y < score.length; y++) {
     const yPadding = basePadding + boxSize * y;
