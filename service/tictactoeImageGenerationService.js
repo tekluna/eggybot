@@ -1,4 +1,6 @@
 import { Jimp } from "jimp";
+import { __dirname } from "../utils/constants.js";
+
 const ticTacToeSize = parseInt(process.env.TICTACTOE_SIZE) | 600;
 
 const adaptDbScore = (score) => {
@@ -8,7 +10,7 @@ const adaptDbScore = (score) => {
   for (let i = 0; i < 3; i++) {
     const scoreLine = []
     for (let j = 0; j < 3; j++) {
-      scoreLine.push(score[`${i*3+j+1}`]);
+      scoreLine.push(score[i*3+j]);
     }
     adaptedScore.push(scoreLine);
   }
@@ -29,8 +31,8 @@ const createEmptyGrid = () => {
 }
 
 const addScoreToGrid = async (grid, score) => {
-  const cross = await Jimp.read("..//cross_180x180.png");
-  const circle = await Jimp.read("../assets/circle_180x180.png");
+  const cross = await Jimp.read(`${__dirname}/assets/cross_180x180.png`);
+  const circle = await Jimp.read(`${__dirname}/assets/circle_180x180.png`);
 
   const boxSize = ticTacToeSize / 3
   const sizeForCrossAndCircle = ticTacToeSize / 4
@@ -56,16 +58,16 @@ const addScoreToGrid = async (grid, score) => {
 
 export async function generateTttImage(score){
 
-  const image = await Jimp.read("../assets/eggy_1637x1067.png");
+  const image = await Jimp.read(`${__dirname}/assets/eggy.png`);
 
   const imgWidth = image.width;
   const ticTacToeXPadding = (imgWidth - ticTacToeSize) / 2;
   const fullGrid = await addScoreToGrid(createEmptyGrid(), adaptDbScore(score));
-  image.composite(fullGrid, ticTacToeXPadding, ticTacToeXPadding / 60);
+  await image.composite(fullGrid, ticTacToeXPadding, ticTacToeXPadding / 60);
 
   const randomUUID = crypto.randomUUID()
 
-  await image.write(`../temp/${randomUUID}.png`);
+  await image.write(`${__dirname}/temp/${randomUUID}.png`);
 
-  return `${randomUUID}.png`
+  return randomUUID
 }

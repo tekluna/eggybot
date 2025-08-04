@@ -9,20 +9,20 @@ datasource db {
 }
 
 model User {
-  discord_id   String     @id @unique
-  tttWins Int @default(0)
-  current_game String 
-  created_at   DateTime   @default(now())
-  updated_at   DateTime   @default(now())
+  discord_id   String   @id @unique
+  tttWins      Int      @default(0)
+  current_game String
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
 }
 
 model Tictactoe {
-  gameId    String @id @unique
-  playerX   String
-  playerO   String
+  gameId        String    @id @unique
+  playerX       String
+  playerO       String
   currentPlayer String
   board         String
-  created_at DateTime  @default(now())
-  updated_at DateTime  @default(now())
-  expires_at DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @default(now())
+  expires_at    DateTime?
 }
