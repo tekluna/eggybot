@@ -1,12 +1,13 @@
-const {SlashCommandBuilder, EmbedBuilder, AttachmentBuilder} = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } = require("discord.js");
 const crypto = require("crypto");
 
 const { updateScore } = require("../../service/tictactoeGameEngineService.js");
 const { generateTttImage } = require("../../service/tictactoeImageGenerationService.js");
 
 const prisma = require("../../service/prismaClientService.js");
+const fs = require("fs");
+const {deleteTttImage} = require("../../service/tictactoeImageGenerationService");
 
-// functions
 async function pickSymbole(player1, player2) {
   const randomNumber = Math.floor(Math.random() * 2);
 
@@ -53,7 +54,6 @@ async function isPlayerInDb(playerIdList, gameId) {
       });
     }
   }
-  return;
 }
 
 async function initGameData(
@@ -74,7 +74,6 @@ async function initGameData(
       board: jsonBoard,
     },
   });
-  return;
 }
 
 async function isPlayerInGame(playerIdList, gameId) {
@@ -199,19 +198,15 @@ module.exports = {
       },
     });
 
-    console.log(newBoard, hasWon, isTie, nextPlayer);
-
     const boardImageFileName = await generateTttImage(newBoard);
-
-    console.log(__dirname)
-
     const file = new AttachmentBuilder(`${__dirname}/../../temp/${boardImageFileName}.png`);
-    const exampleEmbed = new EmbedBuilder()
+    const embedMessage = new EmbedBuilder()
       .setColor(0x0099FF)
       .setTitle('TIC-TAC-TOE')
       .setDescription('The game right now :')
       .setImage(`attachment://${boardImageFileName}.png`)
-    
-    await interaction.reply({ embeds: [exampleEmbed], files: [file] });
+
+    await interaction.reply({ embeds: [embedMessage], files: [file] });
+    deleteTttImage(boardImageFileName)
   },
 };

@@ -1,5 +1,6 @@
 import { Jimp } from "jimp";
 import { __dirname } from "../utils/constants.js";
+import * as fs from "node:fs";
 
 const ticTacToeSize = parseInt(process.env.TICTACTOE_SIZE) | 600;
 
@@ -70,4 +71,10 @@ export async function generateTttImage(score){
   await image.write(`${__dirname}/temp/${randomUUID}.png`);
 
   return randomUUID
+}
+
+export function deleteTttImage(imageFileName){
+  fs.rm(`${__dirname}/temp/${image}.png`, { recursive: true }, (err) => {
+    if (err) console.log(err);
+  });
 }
