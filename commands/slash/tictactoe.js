@@ -7,21 +7,12 @@ const { generateTttImage } = require("../../service/tictactoeImageGenerationServ
 const prisma = require("../../service/prismaClientService.js");
 const fs = require("fs");
 const {deleteTttImage} = require("../../service/tictactoeImageGenerationService");
+const {PrismaClientKnownRequestError} = require("@prisma/client/runtime/edge");
 
 async function pickSymbole(player1, player2) {
   const randomNumber = Math.floor(Math.random() * 2);
-
-  let playerX = "";
-  let playerO = "";
-
-  if (randomNumber == 0) {
-    playerX = player1;
-    playerO = player2;
-    return {playerX, playerO};
-  } else {
-    playerX = player2;
-    playerO = player1;
-  }
+  let playerX =  randomNumber ? player1 : player2;
+  let playerO = randomNumber ? player2 : player1;
   return {playerX, playerO};
 }
 
@@ -35,25 +26,6 @@ async function pickFirstPlayer() {
     firstPlayer = "o";
   }
   return firstPlayer;
-}
-
-async function isPlayerInDb(playerIdList, gameId) {
-  for (let i = 0; i < playerIdList.length; i++) {
-    const playerTableExist = await prisma.user.findUnique({
-      where: {
-        discord_id: playerIdList[i],
-      },
-    });
-
-    if (playerTableExist === null) {
-      const userData = await prisma.user.create({
-        data: {
-          discord_id: playerIdList[i],
-          current_game: gameId,
-        },
-      });
-    }
-  }
 }
 
 async function initGameData(
@@ -130,6 +102,26 @@ async function callGameEngineService(board, currentPlayer, selectedMove) {
   return {newBoard, isWin, isTie, nextPlayer};
 }
 
+async function createTttGame(playerX, playerO){
+  const board = ["", "", "", "", "", "", "", "", ""]
+  const jsonBoard = JSON.stringify(board);
+  const gameId = await crypto.randomUUID();
+  const firstPlayer = await pickFirstPlayer();
+
+  await prisma.tictactoe.create({
+    data: {
+      gameId: gameId,
+      playerX: playerX.id,
+      playerO: playerO.id,
+      currentPlayer: firstPlayer,
+      board: jsonBoard,
+    },
+  });
+  return {gameId, board}
+
+}
+
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("tictactoe")
@@ -143,62 +135,105 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    // create game data
-    const gameId = crypto.randomUUID();
+    let board = null
     const player1 = interaction.user;
     const player2 = interaction.options.getUser("opponent");
     const playerIdList = [player1.id, player2.id];
-    const defaultBoard = ["", "", "", "", "", "", "", "", ""];
-
-    // commented for debuggin and testing reasons
-    // const { isInGame, playerInGame } = await isPlayerInGame(
-    //     playerIdList,
-    //     gameId
-    // );
-    // if (isInGame == true) {
-    //     await interaction.reply(
-    //         `Player  with user id (${playerInGame}) is alredy in a game`
-    //     );
-    //     return;
-    // }
-    //
-    // if (player2.bot === true) {
-    //     await interaction.reply("You can't play against a bot silly!");
-    //     throw new Error("Player is already in a game");
-    //     return;
-    // }
-
-    // if (player2.id === player1.id) {
-    //     await interaction.reply("You can't play against yourself... Get some friends please");
-    //     throw new Error("User cannot play against self");
-    //     return;
-    // }
-
-    const firstPlayer = await pickFirstPlayer();
+    const playerDbList = [];
     const {playerX, playerO} = await pickSymbole(player1, player2);
+    let gameId = ""
 
-    await isPlayerInDb(playerIdList, gameId);
-    await initGameData(gameId, playerX, playerO, firstPlayer, defaultBoard);
 
-    const {currentPlayer, board} = await fetchGameDataFromDb(gameId);
+    for (const discord_id of playerIdList) {
+      try{
+        const newUser = await prisma.user.findUniqueOrThrow({
+          where: {
+            discord_id
+          },
+        })
+        playerDbList.push(newUser);
+
+      } catch (e) {
+        if (e instanceof PrismaClientKnownRequestError) {
+           const newUser = await prisma.user.create({
+            data: {
+              discord_id
+            },
+          });
+          playerDbList.push(newUser);
+        }
+        else {
+          throw new Error("TicTacToe is not working");
+        }
+      }
+    }
+    // playerDbList[0].current_game === playerDbList[1].current_game
+    if (playerDbList[0].current_game === "" && playerDbList[1].current_game === "") {
+      const res = await createTttGame(playerX, playerO);
+      console.log(res)
+      gameId = res.gameId;
+      board = res.board;
+      for (const playerDb of playerDbList) {
+        await prisma.user.update({
+          where: {
+            discord_id: playerDb.discord_id,
+          },
+          data: {
+            current_game: gameId,
+          },
+        })
+      }
+    } else {
+      if (playerDbList[0].current_game) {
+        throw new Error(`${player1.tag} is already in a game`);
+      }
+      if (playerDbList[1].current_game) {
+        throw new Error(`${player2.tag} is already in a game`);
+      }
+    }
+
+    // for (const discord_id of playerIdList) {
+    //   try{
+    //     const newUser = await prisma.tictactoe.findUniqueOrThrow({
+    //       where: {
+    //         discord_id
+    //       },
+    //     })
+    //     playerDbList.push(newUser);
+    //     gameId = await createTttGame(playerX, playerO);
+    //
+    //   } catch (e) {
+    //     if (e instanceof PrismaClientKnownRequestError) {
+    //       const newUser = await prisma.user.create({
+    //         data: {
+    //           discord_id
+    //         },
+    //       });
+    //       playerDbList.push(newUser);
+    //     }
+    //   }
+    // }
+
+
+    // const {currentPlayer, board} = await fetchGameDataFromDb(gameId);
 
     // pass all current game data to game engin and write retuned board and next player into correct table in db
-    const {newBoard, hasWon, isTie, nextPlayer} = await updateScore(
-      board,
-      currentPlayer,
-      3
-    );
+    // const {newBoard, hasWon, isTie, nextPlayer} = await updateScore(
+    //   board,
+    //   currentPlayer,
+    //   3
+    // );
 
-    const res = await prisma.tictactoe.update({
-      where: {
-        gameId: gameId,
-      },
-      data: {
-        board: JSON.stringify(newBoard),
-      },
-    });
+    // const res = await prisma.tictactoe.update({
+    //   where: {
+    //     gameId: gameId,
+    //   },
+    //   data: {
+    //     board: JSON.stringify(newBoard),
+    //   },
+    // });
 
-    const boardImageFileName = await generateTttImage(newBoard);
+    const boardImageFileName = await generateTttImage(board);
     const file = new AttachmentBuilder(`${__dirname}/../../temp/${boardImageFileName}.png`);
     const embedMessage = new EmbedBuilder()
       .setColor(0x0099FF)

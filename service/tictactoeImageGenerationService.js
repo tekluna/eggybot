@@ -74,7 +74,7 @@ export async function generateTttImage(score){
 }
 
 export function deleteTttImage(imageFileName){
-  fs.rm(`${__dirname}/temp/${image}.png`, { recursive: true }, (err) => {
+  fs.rm(`${__dirname}/temp/${imageFileName}.png`, { recursive: true }, (err) => {
     if (err) console.log(err);
   });
 }
