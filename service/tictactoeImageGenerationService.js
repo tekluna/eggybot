@@ -1,5 +1,5 @@
 import { Jimp } from "jimp";
-import { __dirname } from "../utils/constants.js";
+import { __dirname } from "../utils/constants.mjs";
 import * as fs from "node:fs";
 
 const ticTacToeSize = parseInt(process.env.TICTACTOE_SIZE) | 600;
