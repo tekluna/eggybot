@@ -35,17 +35,17 @@ function playMove(board, currentPlayer, selectedMove) {
     let newBoard = board;
 
     // Check if the selected move is valid
-    if (selectedMove < 0 || selectedMove >= 9 || isNaN(selectedMove)) {
+    if (selectedMove < 0 || selectedMove > 9 || isNaN(selectedMove)) {
         throw new Error("This move is not valid!");
     }
 
     //     throw new Error("This move has already been played!");
-    if (newBoard[selectedMove] !== "") {
+    if (newBoard[selectedMove - 1] !== "") {
         throw new Error("This move has already been played!");
     }
 
-    if (newBoard[selectedMove] === "") {
-        newBoard[selectedMove] = currentPlayer;
+    if (newBoard[selectedMove - 1] === "") {
+        newBoard[selectedMove - 1] = currentPlayer;
 
         const playedMoves = findPlayedMoves(newBoard, currentPlayer);
         const hasWon = checkWin(playedMoves);
@@ -62,7 +62,7 @@ function playMove(board, currentPlayer, selectedMove) {
     }
 }
 
-export async function updateScore(board, currentPlayer, selectedMove) {
+export function updateScore(board, currentPlayer, selectedMove) {
     const { newBoard, hasWon, isTie, nextPlayer } = playMove(
         board,
         currentPlayer,
