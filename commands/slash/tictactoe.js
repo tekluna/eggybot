@@ -27,10 +27,11 @@ async function pickFirstPlayer() {
   return firstPlayer;
 }
 
-const sendEmbedMessage = async (interaction, board, winner=false, isTie=false) => {
+const sendEmbedMessage = async (interaction, nextTurnPlayer, board, winner=false, isTie=false) => {
   const boardImageFileName = await generateTttImage(board);
   const file = new AttachmentBuilder(`${__dirname}/../../temp/${boardImageFileName}.png`);
-  const message = winner ? `${winner.tag} won` : isTie ? "It's a tie" : "The game right now :"
+  const message = winner ? `${winner} won !` : isTie ? "It's a tie !" : `It's ${nextTurnPlayer}'s turn !`
+  // const message = isTie ? "It's a tie" : winner ? `${winner} won` : `It's your turn ${nextTurnPlayer} !`
   const embedMessage = new EmbedBuilder()
     .setColor(0x0099FF)
     .setTitle('TIC-TAC-TOE')
@@ -39,7 +40,33 @@ const sendEmbedMessage = async (interaction, board, winner=false, isTie=false) =
 
   await interaction.reply({ embeds: [embedMessage], files: [file] });
   deleteTttImage(boardImageFileName)
-  return {embedMessage, file}
+}
+
+const sendEmbedStartingMessage = async (interaction, nextTurnPlayer, board) => {
+  const boardImageFileName = await generateTttImage(board);
+  const file = new AttachmentBuilder(`${__dirname}/../../temp/${boardImageFileName}.png`);
+  const embedMessage = new EmbedBuilder()
+    .setColor(0x0099FF)
+    .setTitle('TIC-TAC-TOE')
+    .setDescription(`
+      ᲼These are the playable positions :
+       \u200B
+      ᲼1᲼|᲼2᲼|᲼3
+      ᲼4᲼|᲼5᲼|᲼6
+      ᲼7᲼|᲼8᲼|᲼9
+    `)
+    .setImage(`attachment://${boardImageFileName}.png`)
+
+  await interaction.reply({ embeds: [embedMessage], files: [file] });
+  deleteTttImage(boardImageFileName)
+}
+
+const sendEmbedErrorMessage = async (interaction, errorMessage) => {
+  const embedMessage = new EmbedBuilder()
+    .setColor(0xFF0000)
+    .setTitle('TIC-TAC-TOE')
+    .setDescription(errorMessage)
+  await interaction.reply({ embeds: [embedMessage] });
 }
 
 async function createTttGame(playerX, playerO){
@@ -47,6 +74,7 @@ async function createTttGame(playerX, playerO){
   const jsonBoard = JSON.stringify(board);
   const gameId = await crypto.randomUUID();
   const firstPlayer = await pickFirstPlayer();
+  const firstPlayerDiscordUser = firstPlayer === "x" ? playerX : playerO
 
   await prisma.tictactoe.create({
     data: {
@@ -57,7 +85,7 @@ async function createTttGame(playerX, playerO){
       board: jsonBoard,
     },
   });
-  return {gameId, board}
+  return {gameId, board, firstPlayerDiscordUser}
 }
 
 
@@ -68,13 +96,21 @@ module.exports = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("start")
-        .setDescription("Create new tic tac toe game!")
+        .setDescription("Create a new tic-tac-toe game !")
         .addUserOption((option) =>
           option
             .setName("opponent")
             .setDescription("User to play against")
         )
     )
+    // .addSubcommand((subcommand) =>
+    //   subcommand
+    //     .setName("join")
+    //     .setDescription("Join a tic tac toe game !")
+    //     .addUserOption((option) =>
+    //     option
+    //     )
+    // )
     .addSubcommand((subcommand) =>
       subcommand
         .setName("play")
@@ -90,6 +126,7 @@ module.exports = {
 
   async execute(interaction) {
     let board = null
+    let nextTurnPlayer = null
     const player1 = interaction.user;
     const playerDbList = [];
 
@@ -116,15 +153,15 @@ module.exports = {
             });
             playerDbList.push(newUser);
           } else {
-            throw new Error(`TicTacToe is not working: ${typeof e}: ${e}`);
+            return await sendEmbedErrorMessage(interaction, "Tic-Tac-Toe is not working !")
           }
         }
       }
       if (!playerDbList[0].current_game && !playerDbList[1].current_game) {
         const res = await createTttGame(playerX, playerO);
-        console.log(res)
         gameId = res.gameId;
         board = res.board;
+        nextTurnPlayer = res.firstPlayerDiscordUser
         for (const playerDb of playerDbList) {
           await prisma.user.update({
             where: {
@@ -137,12 +174,13 @@ module.exports = {
         }
       } else {
         if (playerDbList[0].current_game) {
-          throw new Error(`${player1.tag} is already in a game`);
+          return await sendEmbedErrorMessage(interaction, `${player1} is already in a game`)
         }
         if (playerDbList[1].current_game) {
-          throw new Error(`${player2.tag} is already in a game`);
+          return await sendEmbedErrorMessage(interaction, `${player1} is already in a game`)
         }
       }
+      return await sendEmbedStartingMessage(interaction, nextTurnPlayer, board)
     }
     if (interaction.options._subcommand === "play") {
       try {
@@ -152,11 +190,11 @@ module.exports = {
         playerDbList.push(playerDb1);
       } catch (e) {
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          throw new Error("You didn't create a game already !");
+          return await sendEmbedErrorMessage(interaction, "You didn't start a game already !")
         }
       }
       if (!playerDbList[0].current_game) {
-        throw new Error("You didn't start a game already !");
+        return await sendEmbedErrorMessage(interaction, "You didn't start a game already !")
       }
       try {
         const tttGame = await prisma.tictactoe.findUniqueOrThrow({
@@ -165,13 +203,11 @@ module.exports = {
           }
         });
         const player = tttGame.playerX === playerDbList[0].discord_id ? "x" : "o"
+        nextTurnPlayer = `<@${player === "x" ? tttGame.playerO : tttGame.playerX}>`
         board = JSON.parse(tttGame.board)
-        console.log(tttGame.currentPlayer)
-        console.log(player)
         if (tttGame.currentPlayer === player) {
           const res = updateScore(board, player, interaction.options._hoistedOptions[0].value);
           board = res.newBoard;
-          console.log(board)
           await prisma.tictactoe.update({
             where: { gameId: tttGame.gameId },
             data: {
@@ -179,17 +215,30 @@ module.exports = {
               board: JSON.stringify(board),
             }
           })
-          if (res.hasWon) {
-            await sendEmbedMessage(interaction, board, res.hasWon ? playerDbList[0].discord_id : false, res.isTie)
+          if (res.hasWon || res.isTie) {
+            if (res.hasWon) {
+              playerDbList[0].tttWins++
+              await prisma.user.update({
+                where: { discord_id: playerDbList[0].discord_id },
+                data: { tttWins: playerDbList[0].tttWins },
+              })
+            }
+            const winner = res.hasWon ? player1 : false
+            await sendEmbedMessage(interaction, nextTurnPlayer, board, winner, res.isTie);
+            await prisma.user.updateMany({
+              where: { current_game: tttGame.gameId },
+              data: { current_game: null },
+            })
+            await prisma.tictactoe.delete({
+              where: { gameId: tttGame.gameId },
+            })
+            return
           }
         }
       } catch (e) {
-        console.log(e)
-        if (e instanceof Prisma.PrismaClientKnownRequestError) {
-          console.log("TicTacToe is not working: " + e);
-        }
+        return await sendEmbedErrorMessage(interaction, e.message);
       }
     }
-    await sendEmbedMessage(interaction, board)
+    await sendEmbedMessage(interaction, nextTurnPlayer, board)
   },
 };

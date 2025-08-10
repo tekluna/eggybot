@@ -51,7 +51,6 @@ function playMove(board, currentPlayer, selectedMove) {
         const hasWon = checkWin(playedMoves);
 
         if (hasWon === true) {
-            console.log(`${currentPlayer} wins!`);
             return { newBoard, hasWon: true, isTie: false, nextPlayer };
         }
         if (newBoard.every((move) => move !== "")) {
